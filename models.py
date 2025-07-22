@@ -1,19 +1,19 @@
+from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Optional, List
 
 @dataclass
 class Node:
     id: int
     name: str
-    url: Optional[str]
+    url: str | None
     level: int
-    parent: Optional["Node"] = None
-    children: List["Node"] = field(default_factory=list)
+    parent: Node | None = None
+    children: list[Node] = field(default_factory=list)
 
     def is_leaf(self) -> bool:
         return not self.children
 
-    def breadcrumb(self) -> List[str]:
+    def breadcrumb(self) -> list[str]:
         path = []
         node = self
         while node:

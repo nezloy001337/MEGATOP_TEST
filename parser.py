@@ -25,3 +25,16 @@ class WildberriesParser:
             node.children.append(child_node)
 
         return node
+
+    @staticmethod
+    def get_leaf_nodes(root: Node) -> list[Node]:
+        leaves = []
+
+        def walk(node: Node):
+            if not node.children:
+                leaves.append(node)
+            for child in node.children:
+                walk(child)
+
+        walk(root)
+        return leaves
