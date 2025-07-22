@@ -6,6 +6,8 @@ from functools import wraps
 from aiolimiter import AsyncLimiter
 from httpx import AsyncClient, HTTPError
 
+from models import Node
+
 logger = logging.getLogger(__name__)
 
 
@@ -14,7 +16,7 @@ def retry_async(
     base_delay=4,
     max_delay=30,
     jitter=2,
-    exceptions=HTTPError,  # connection timeout and ext.
+    exceptions=(ValueError, HTTPError),  # connection timeout and ext.
 ):
     def decorator(func):
         @wraps(func)
@@ -45,7 +47,7 @@ class WildberriesClient:
         httpx_client: AsyncClient,
     ):
         self.httpx_client = httpx_client
-        self.limiter = AsyncLimiter(max_rate=1, time_period=0.35)
+        self.limiter = AsyncLimiter(max_rate=70, time_period=1)
 
     async def _get_request(self, url: str):
         async with self.limiter:
@@ -65,3 +67,27 @@ class WildberriesClient:
             )
 
         return response.json()
+
+    @retry_async(retries=3)
+    async def _get_categories_json(self, url):
+        response = await self._get_request(url=url)
+
+        if response.status_code != 200:
+            raise ValueError(
+                f"Status code {response.status_code} is not expected. Retrying..."
+            )
+
+        return response.json()
+
+    async def _leaf_task(self, leaf: Node):
+        categories_json = await self._get_categories_json(leaf.categories_url)
+        categories = categories_json["data"]["filters"][0]["items"]
+        print(categories)
+        leaf.categories = categories
+
+    async def get_categories_for_leafs(self, leafs: list[Node]):
+        leaf_tasks = [self._leaf_task(leaf) for leaf in leafs]
+        results = await asyncio.gather(*leaf_tasks, return_exceptions=True)
+        for result in results:
+            if isinstance(result, Exception):
+                logger.error("не получилось получить данные для %s", result)
