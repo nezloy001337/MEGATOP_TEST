@@ -10,7 +10,13 @@ logger = logging.getLogger(__name__)
 class WildberriesParser:
     @staticmethod
     def process_page_json(main_page_json):
-        return [WildberriesParser._build_tree(node) for node in main_page_json[3:-2]]
+        # убираем внешние и пустые ссылки
+        indices_to_remove = {0, 1, 3, 34}
+        cleaned_json = [
+            item for i, item in enumerate(main_page_json) if i not in indices_to_remove
+        ]
+
+        return [WildberriesParser._build_tree(node) for node in cleaned_json]
 
     @staticmethod
     def _build_tree(data: dict, level: int = 0, parent: Node | None = None) -> Node:
@@ -18,7 +24,7 @@ class WildberriesParser:
             id=data["id"],
             name=data["name"],
             url=data.get("url"),
-            query_param=data.get('searchQuery'),
+            query_param=data.get("searchQuery"),
             level=level,
             parent=parent,
         )

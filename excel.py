@@ -9,7 +9,7 @@ def save_trees_to_excel(roots: list[Node], filename: str = "wb_categories.xlsx")
     wb.remove(wb.active)  # удалим стандартный пустой лист
 
     for root in roots:
-        ws = wb.create_sheet(title=root.name + "- кат")
+        ws = wb.create_sheet(title=root.name + " - кат")
         ws.append(["ID", "Name", "URL", "Level", "Parent ID"])
 
         def dfs(node: Node):

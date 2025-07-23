@@ -48,7 +48,7 @@ class WildberriesClient:
         httpx_client: AsyncClient,
     ):
         self.httpx_client = httpx_client
-        self.limiter = AsyncLimiter(max_rate=50, time_period=1)
+        self.limiter = AsyncLimiter(max_rate=80, time_period=1)
 
     async def _get_request(self, url: str):
         async with self.limiter:
@@ -85,8 +85,6 @@ class WildberriesClient:
         try:
             categories_json = await self._get_categories_json(leaf.categories_url)
             all_data = categories_json["data"]["filters"]
-            if leaf.id == 214:
-                print()
             categories = find_categories_key(all_data)
 
             for category in categories:

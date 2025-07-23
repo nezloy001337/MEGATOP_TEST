@@ -10,7 +10,7 @@ from wildberries_client import WildberriesClient
 
 async def categories_use_case():
     time_before = datetime.now()
-    http_client = httpx.AsyncClient(timeout=7.0)
+    http_client = httpx.AsyncClient(timeout=4.0)
     wildberries_client = WildberriesClient(http_client)
 
     # получаем json с категориями
