@@ -83,9 +83,10 @@ class WildberriesClient:
 
     async def _leaf_task(self, leaf: Node):
         try:
-
             categories_json = await self._get_categories_json(leaf.categories_url)
             all_data = categories_json["data"]["filters"]
+            if leaf.id == 214:
+                print()
             categories = find_categories_key(all_data)
 
             for category in categories:

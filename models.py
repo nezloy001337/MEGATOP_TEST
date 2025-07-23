@@ -8,6 +8,7 @@ class Node:
     name: str
     url: str | None
     level: int
+    query_param: str | None = None
     parent: Node | None = None
     children: list[Node] = field(default_factory=list)
 

@@ -18,6 +18,7 @@ class WildberriesParser:
             id=data["id"],
             name=data["name"],
             url=data.get("url"),
+            query_param=data.get('searchQuery'),
             level=level,
             parent=parent,
         )
@@ -57,7 +58,6 @@ class WildberriesParser:
     @staticmethod
     def _build_leaf_filter_url(node: Node) -> Optional[str]:
         if node.children:
-            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             return None  # не leaf, не строим ссылку
 
         base_url = "https://search.wb.ru/exactmatch/ru/common/v14/search"
@@ -69,8 +69,9 @@ class WildberriesParser:
             "dest": "-1255987",
             "hide_dtype": "13;14",
             "lang": "ru",
-            "query": f"menu_redirect_subject_v2_{node.id} {node.name}",
+            "query": node.query_param,
             "resultset": "filters",
+            "filters": "ffsubject",
             "spp": "30",
             "suppressSpellcheck": "false",
         }
