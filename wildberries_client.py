@@ -7,6 +7,7 @@ from aiolimiter import AsyncLimiter
 from httpx import AsyncClient, HTTPError
 
 from models import Node
+from utils import find_categories_key
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +48,7 @@ class WildberriesClient:
         httpx_client: AsyncClient,
     ):
         self.httpx_client = httpx_client
-        self.limiter = AsyncLimiter(max_rate=70, time_period=1)
+        self.limiter = AsyncLimiter(max_rate=50, time_period=1)
 
     async def _get_request(self, url: str):
         async with self.limiter:
@@ -71,6 +72,7 @@ class WildberriesClient:
     @retry_async(retries=3)
     async def _get_categories_json(self, url):
         response = await self._get_request(url=url)
+        print(f"получили категории для {url}")
 
         if response.status_code != 200:
             raise ValueError(
@@ -80,14 +82,33 @@ class WildberriesClient:
         return response.json()
 
     async def _leaf_task(self, leaf: Node):
-        categories_json = await self._get_categories_json(leaf.categories_url)
-        categories = categories_json["data"]["filters"][0]["items"]
-        print(categories)
-        leaf.categories = categories
+        try:
+
+            categories_json = await self._get_categories_json(leaf.categories_url)
+            all_data = categories_json["data"]["filters"]
+            categories = find_categories_key(all_data)
+
+            for category in categories:
+                category_node = Node(
+                    id=category["id"],
+                    name=category["name"],
+                    url=None,
+                    level=99,
+                    parent=leaf,
+                )
+
+                leaf.children.append(category_node)
+
+            leaf.categories = categories
+            return leaf
+
+        except Exception:
+            raise Exception("не получилось найти категории для %s", leaf.name)
 
     async def get_categories_for_leafs(self, leafs: list[Node]):
         leaf_tasks = [self._leaf_task(leaf) for leaf in leafs]
         results = await asyncio.gather(*leaf_tasks, return_exceptions=True)
+
         for result in results:
             if isinstance(result, Exception):
-                logger.error("не получилось получить данные для %s", result)
+                logger.error(result)

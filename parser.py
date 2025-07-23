@@ -69,7 +69,7 @@ class WildberriesParser:
             "dest": "-1255987",
             "hide_dtype": "13;14",
             "lang": "ru",
-            "query": f"menu_redirect_v2_{node.id} {node.name}",
+            "query": f"menu_redirect_subject_v2_{node.id} {node.name}",
             "resultset": "filters",
             "spp": "30",
             "suppressSpellcheck": "false",
